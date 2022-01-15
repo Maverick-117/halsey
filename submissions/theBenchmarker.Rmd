@@ -1,0 +1,47 @@
+---
+title: "Benchmarking Associativity - HW1"
+author: "Jonathan Vo"
+date: "1/14/2022"
+output: html_document
+---
+
+We'll use my Stats230 package (intended name is the Halsey package) to observe something about the efficiency of associativity in matrix-vector multiplication as implemented with the R operator `%*%`. `mult2mv` is the function which we will use to assess whether $A\cdot(B\cdot x)$ is faster than $(A\cdot B)\cdot x$ or vice versa. (Note: $A$ and $B$ are matrices of order $m\times p$ and $p\times n$, respectively, while $x$ is a vector of dimension $n$). GitHub Repo URL: https://github.com/Maverick-117/stats230.
+
+# Setup
+
+```{r multmv}
+require(bench)
+require(devtools)
+require(ggplot2)
+require(tidyr)
+require(ggbeeswarm)
+require(ggridges)
+#install.packages('../',repos=NULL,type="source")
+library(stats230)
+```
+We use big square matrices of dimension $100\times 100$ to make the difference rather pronounced in this exercise with 1,000 samples.
+
+# Benchmarking
+
+```{r benchmarking}
+itrn <- 1000
+nr <- 100
+
+A <- matrix(runif(nr^2,min=-1,max=1),nrow=nr)
+B <- matrix(runif(nr^2,min=-1,max=1),nrow=nr)
+x <- runif(nr,min=-1,max=1)
+
+
+# Run benchmarks on the function mult2mv().
+outp <- bench::mark(halsey::mult2mv(A,B,x,TRUE), # TRUE means using A * (B * x)
+                    halsey::mult2mv(A,B,x,FALSE) # FALSE means using (A * B) * x
+                    ,iterations=itrn)
+
+# Plot the output
+pltp <- autoplot(outp)
+pltp
+```
+
+## Result
+
+It seems like it's more efficient to multiply through composition (i.e. $A\cdot(B\cdot x)$) than with matrix multiplication (i.e. $(A\cdot B)\cdot x$).
