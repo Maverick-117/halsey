@@ -1,0 +1,52 @@
+---
+title: "HW2 Problem 8"
+author: "Jonathan Vo"
+date: "2/4/2022"
+output: html_document
+---
+
+```{r init, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Comparing QR and SVD decompositions for Linear Regression
+
+```{r setup}
+library(bench)
+#install.packages('C:/Users/jhvo9/Documents/stats230root/halsey',repos=NULL,type="source")
+library(stats230) #library(halsey) maybe?
+library(tibble)
+library(tidyr)
+reg_data = read.csv("C:\\Users\\jhvo9\\Documents\\stats230root\\homework2_regression.csv")
+x<-reg_data[2:dim(reg_data)[2]]
+y<-reg_data$y
+```
+
+## QR decomposition
+
+```{r qr}
+
+coef1<-QR_student(x,y)
+coef1
+```
+
+## SVD decomposition
+
+```{r svd}
+
+coef2<-SVD_student(x,y)
+coef2
+```
+Both methods produced the same result, as one would hope.
+
+# Benchmarking both
+
+```{r benchmark}
+qr_benchmark<-bench::mark(QR_student(x,y),iterations=10000)
+svd_benchmark<-bench::mark(SVD_student(x,y),iterations=10000)
+df_benchmark <- qr_benchmark
+df_benchmark <- df_benchmark %>% add_row(svd_benchmark)
+plot(df_benchmark)
+print(paste("Ratio of Median SVD time to Median QR time: ",svd_benchmark["median"]/qr_benchmark["median"]))
+```
+
+We can see that SVD is generally a bit faster than QR decomposition in terms of median time to compute. The SVD method as-implemented bypasses the need for dense matrix inversion as `solve(A,b)` would require, and it's pretty easy to invert a diagonal matrix as my SVD method does it.
