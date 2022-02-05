@@ -1,0 +1,30 @@
+---
+title: "Benchmarking MVN sampler"
+author: "Jonathan Vo"
+date: "2/4/2022"
+output: html_document
+---
+Setup
+```{r setup}
+# install.packages('C:/Users/jhvo9/Documents/stats230root/halsey',repos=NULL,type="source")
+library(stats230)
+d = 4
+N = 100
+```
+
+## Small test of the sampler
+
+Generate sample mean vector and positive definite matrix. Then use the sample vector and matrix to see if it can recover itself through the sampler.
+```{r sample}
+sample_mean = runif(d)
+sample_covariance.pre = matrix(runif(d*d,min = 2, max = 4),d,d);
+sample_covariance = sample_covariance.pre + t(sample_covariance.pre) + d*diag(d)
+
+samples = MVNsampler(N, sample_mean, sample_covariance)
+
+print(paste("sample deviation of mean (l-2 norm):", sum(sqrt((colMeans(samples) - sample_mean)^2))))
+
+print(paste("sample deviation of covariance (matrix l-1 norm):", norm(cov(samples) - sample_covariance, type = "o")))
+
+```
+Not bad.
