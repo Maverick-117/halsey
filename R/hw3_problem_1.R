@@ -75,3 +75,13 @@ est_FS <- logres_FS(x,y,rep(0,each=ncol(pre_x)),0.1,T_end)
 plot(est_GD[[3]])
 plot(est_FS[[3]])
 
+# By virtue of needing more iterations, the Fisher scoring is clearly faster than gradient descent.
+print("Theta estimates from gradient descent")
+print(est_GD[[1]])
+print("Theta estimates from Fisher scoring")
+print(est_FS[[1]])
+print("----------------------------")
+print("Confidence interval from gradient descent (using standard deviation of last 20 estimates for standard error measure)")
+print(est_GD[[2]])
+print("Confidence interval from Fisher scoring (using square root inverse of information matrix)")
+print(est_FS[[2]][,100])
