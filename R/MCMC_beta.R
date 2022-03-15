@@ -10,9 +10,6 @@ MCMC_beta <- function(x0,N,alph=4,bet=2,sigma=0.125) {
   stdmean_trace = rep(0,N);
   std_trace = rep(0,N);
   MCMC_trace[1] = x0;
-  MCMC_sq_trace[1] = x0^2;
-  MCMC_sq_mean_trace[1] = x0^2;
-  stdmean_trace[1] = 0;
   for (n in 2:N) {
 
     x1_temp = rlnorm(1,meanlog=log(MCMC_trace[n-1]),sdlog=sigma);

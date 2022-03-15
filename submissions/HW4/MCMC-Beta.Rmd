@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r actualsetup, echo=FALSE}
 library(ggplot2)
-#install.packages('C:/Users/jhvo9/Documents/stats230root/halsey',repos=NULL,type="source")
+install.packages('C:/Users/jhvo9/Documents/stats230root/halsey',repos=NULL,type="source")
 library(stats230)
 ```
 
@@ -34,7 +34,7 @@ x0 = 0.7933146;#from rbeta(1,4,2);
 N = 6000;
 burnin = 1000;
 
-MCMC_trace = unlist(MCMC_beta(x0,N));
+MCMC_trace = MCMC_beta(x0,N);
 MCMC_sq_trace = MCMC_trace^2;
 MCMC_sq_mean_trace = rep(0,N); for (n in 1:N) {MCMC_sq_mean_trace[n] = mean(MCMC_sq_trace[1:n])};
 stdmean_trace = rep(0,N); for (n in 1:N) {stdmean_trace[n] = sd(MCMC_sq_mean_trace[1:n])}
