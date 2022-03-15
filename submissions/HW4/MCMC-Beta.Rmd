@@ -1,0 +1,98 @@
+---
+title: "HW4-Problem 3a and 3c"
+author: "Jonathan Vo"
+date: "3/14/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r actualsetup, echo=FALSE}
+library(ggplot2)
+#install.packages('C:/Users/jhvo9/Documents/stats230root/halsey',repos=NULL,type="source")
+library(stats230)
+```
+
+# Problem 1
+
+```{r Problem 3a}
+x = rbeta(1000,4,2); y = x^2;
+y_se = 1.96 * sqrt(sd(y)/1000); y_m = mean(y);
+print(paste("Mean:",y_m,"Standard Error:",y_se))
+print(paste("95% Confidence Interval: (",y_m-y_se,", ",y_m+y_se,")",sep=""))
+```
+
+# Problem 3c
+
+You can also embed plots, for example:
+
+```{r Problem 3c init}
+x0 = 0.7933146;#from rbeta(1,4,2);
+
+N = 6000;
+burnin = 1000;
+
+MCMC_trace = unlist(MCMC_beta(x0,N));
+MCMC_sq_trace = MCMC_trace^2;
+MCMC_sq_mean_trace = rep(0,N); for (n in 1:N) {MCMC_sq_mean_trace[n] = mean(MCMC_sq_trace[1:n])};
+stdmean_trace = rep(0,N); for (n in 1:N) {stdmean_trace[n] = sd(MCMC_sq_mean_trace[1:n])}
+TTT = N-burnin+1;
+
+temp = rbeta(TTT,4,2); temp_se = 1.96 * sqrt(sd(temp)/TTT); temp_m = mean(temp);
+temp_sq = temp^2; temp_sq_se = 1.96 * sqrt(sd(temp_sq)/TTT); temp_sq_m = mean(temp_sq); 
+lbs = c(rep("MCMC estimate of Beta(4,2)",TTT),rep(paste("rbeta(",TTT,",4,2) Samples",sep=""),TTT))
+lbsq = c(rep("Square of MCMC estimate of Beta(4,2)",TTT),rep(paste("Square of rbeta(",TTT,",4,2) Samples",sep=""),TTT))
+xT = c(as.matrix(MCMC_trace[burnin:N]), as.matrix(temp))
+xTsq = c(as.matrix(MCMC_sq_trace[burnin:N]), as.matrix(temp_sq))
+df = data.frame(x= xT, Condition = lbs)
+dfsq = data.frame(x=xTsq, Condition=lbsq)
+
+serr = rep(0,N); for (n in 2:N) {serr[n] = qt(0.975,df=n-1)*stdmean_trace[n]/sqrt(n);}
+
+lowerCI_trace = MCMC_sq_mean_trace - serr; upperCI_trace = MCMC_sq_mean_trace + serr;
+
+traces = data.frame(lowerCI_trace,MCMC_sq_mean_trace,upperCI_trace)
+```
+
+```{r Problem 3c hists}
+ggplot(data=df,aes(x=x,color=Condition,fill=Condition)) + 
+  geom_histogram(alpha=0.25,binwidth=0.05,position="identity") + 
+  xlab("probability") + 
+  ggtitle(paste("Histograms for", TTT, "samples")) +
+  geom_vline(xintercept = mean(MCMC_trace[burnin:N]),linetype="twodash",color="red") + 
+  geom_vline(xintercept = mean(temp),linetype="twodash",color="blue") +
+  annotate("rect",xmin=temp_m-temp_se,xmax=temp_m+temp_se,ymin=0,ymax=650,alpha=0.1,fill="blue")
+
+```
+Above, we can see two overlaid histograms pertaining to Beta(4,2). One was generated from the MCMC. The other generated from R's `rbeta()` function. We can see that the overall shapes are pretty close to one another. The blue dashed vertical line is the mean of the samples pulled from `rbeta`, with the 95% confidence interval in the transparent blue box. The red dashed vertical line is the mean of the samples pulled from the MCMC. For the most part, the red dashed line should lie within the interval contained by the transparent blue box. Below are prints of the mean of the estiamte and the square of that quantity:
+```{r Problem 3c E[X^2] estimate}
+print(paste("Mean of MCMC Trace: ",mean(MCMC_trace),". Mean of the Square of the MCMC Trace:", MCMC_sq_mean_trace[N],".",sep=""))
+print(paste("Mean of rbeta samples: ",mean(temp),". Mean of the square of the rbeta samples:", mean(temp^2),".",sep=""))
+```
+Since the histograms for the Beta distributions overlap pretty significantly, the square of these estimates will also overlap significantly, as follows:
+```{r Problem 3c histsq}
+ggplot(data=dfsq,aes(x=x,color=Condition,fill=Condition)) + 
+  geom_histogram(alpha=0.25,binwidth=0.05,position="identity") + 
+  xlab("probability") + 
+  ggtitle(paste("Histograms for", TTT, "squared samples")) +
+  geom_vline(xintercept = mean(MCMC_sq_trace[burnin:N]),linetype="twodash",color="red") + 
+  geom_vline(xintercept = mean(temp_sq),linetype="twodash",color="blue") +
+  annotate("rect",xmin=temp_sq_m-temp_sq_se,xmax=temp_sq_m+temp_sq_se,ymin=0,ymax=650,alpha=0.1,fill="blue")
+
+```
+
+```{r Problem 3c trace}
+ggplot(traces,aes(x=1:N,y=MCMC_sq_mean_trace)) +
+  geom_line(col='black',size=0.75) +
+  geom_ribbon(aes(ymin=lowerCI_trace,ymax=upperCI_trace),alpha=0.3,fill='cyan') +
+  annotate("rect",xmin=1,xmax=burnin,ymin=min(lowerCI_trace),ymax=max(upperCI_trace),alpha=0.05,fill="red") +
+  xlab("iterations") +
+  ylab("Estimate of mean(Beta(4,2)^2)") +
+  annotate("text",label="Burn-In Region",x = burnin/2, y = max(0.99*upperCI_trace),col='red',size=5) +
+  annotate("text",label=paste("mean:", formatC(signif(MCMC_sq_mean_trace[N],digits=3), digits=3,format="fg", flag="#")),x = as.integer(N*0.9), y = 1.2*upperCI_trace[N],col='black',size=5)+
+  ggtitle("Trace of MCMC Estimate of Mean for Beta(4,2) Squared")
+
+```
+Above, we can see a trace of the mean as the MCMC proceeds forward in iterations. The transparent red region indicates what is designated as the burn-in interval. The cyan band is the 95% confidence interval of the mean estimate, where the mean and squared mean are also in the plot above. Per trace, the confidence interval bands generally squeeze closer together as iterations increase. The aspect ratio of your screen might cut off the values.
