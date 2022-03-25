@@ -1,0 +1,57 @@
+---
+title: "HW3 Problem 1"
+author: "Jonathan Vo"
+date: "3/24/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+```{r setup22}
+install.packages('C:/Users/jhvo9/Documents/stats230root/halsey',repos=NULL,type="source")
+library(stats230)
+
+
+dat = read.table('SAheart.data.txt',header = TRUE, sep=",")
+pre_x = as.matrix(dat[,-c(1,ncol(dat))])
+
+N = nrow(pre_x);
+d = ncol(pre_x);
+for (i in 1:N) {
+  if (pre_x[i,"famhist"] == "Present") {
+    pre_x[i,"famhist"] = 1
+  } else {
+    pre_x[i,"famhist"] = 0
+  }
+}
+
+x = matrix(as.numeric(pre_x),ncol=d)
+y = dat[,ncol(dat)]
+T_end=100;
+alpha = 0.1
+```
+
+# Running computations and plotting
+
+
+```{r running}
+est_GD <- logres_GD(x,y,rep(0,each=ncol(pre_x)),0.0001,T_end*100)
+est_FS <- logres_FS(x,y,rep(0,each=ncol(pre_x)),0.1,T_end)
+print("Theta estimates from gradient descent")
+print(est_GD[[1]])
+print("Theta estimates from Fisher scoring")
+print(est_FS[[1]])
+print("----------------------------")
+print("Confidence interval from gradient descent (using standard deviation of last 20 estimates for standard error measure)")
+print(est_GD[[2]])
+print("Confidence interval from Fisher scoring (using square root inverse of information matrix)")
+print(est_FS[[2]][,100])
+plot(est_GD[[3]])
+plot(est_FS[[3]])
+```
+
+By virtue of needing more iterations to similar log-likelihood values, the Fisher scoring approach is faster than gradient descent.

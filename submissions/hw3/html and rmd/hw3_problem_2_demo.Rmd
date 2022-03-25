@@ -1,0 +1,30 @@
+---
+title: "HW3 Problem 2 Demo"
+author: "Jonathan Vo"
+date: "3/24/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setup
+
+```{r setup2}
+install.packages('C:/Users/jhvo9/Documents/stats230root/halsey',repos=NULL,type="source")
+library(stats230)
+```
+
+# Application of the EM function
+
+
+```{r application}
+n = c(6,4,55,35);
+p0 = c(3,2,1)/6;
+T_end = 1000;
+p = EM_custom(n,p0,T_end)
+print(p)
+```
+
+We can see that the estimated allele frequencies reflect the phenotype frequencies well.

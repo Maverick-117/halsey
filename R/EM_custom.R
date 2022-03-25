@@ -1,6 +1,8 @@
 # Problem 2
 
 EM_custom <- function(n, p_vec, T_end) {
+  #' Expectation-Maximization function for the blood type example
+  #'
   #' @param n is the phenotype vector (n_a, n_b, n_ab, n_o)
   #' @param p_vec is the allele vector (p_a, p_b, p_o)
   #' @param T_end indicates how often the for-loop iterates
@@ -26,8 +28,3 @@ EM_custom <- function(n, p_vec, T_end) {
   result = c(p_a,p_b,p_o)
   return(result)
 }
-
-n = c(6,4,55,35);
-p0 = c(3,2,1)/6;
-T_end = 1000;
-p = EM_custom(n,p0,T_end)

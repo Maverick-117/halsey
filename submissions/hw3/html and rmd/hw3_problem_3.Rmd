@@ -1,0 +1,97 @@
+---
+title: "HW3 Problem 3"
+author: "Jonathan Vo"
+date: "3/24/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Problem 3 setup
+
+```{r packages}
+install.packages('C:/Users/jhvo9/Documents/stats230root/halsey',repos=NULL,type="source")
+library(stats230)
+```
+
+# Problem 3 results
+
+## Problem 3a
+
+
+```{r problem3a}
+P = matrix(c(0.98,0.02,0.05,0.95),nrow=2);
+E = t(matrix(c(rep(1,6)/6,c(1,1,5,1,1,1)/10),ncol=2));
+v0 = rep(1,2)/2;
+N_s = 2;
+# simulating HMM
+T_end = 100;
+#v = matrix(rep(1,N_s * T_end),nrow = N_s);
+
+q = rep(-1,T_end)
+a = rep(-1,T_end)
+v = v0;
+for (t in 1:T_end){
+  q[t] = sample(x = c(1,2), size = 1,
+                prob = v, replace=T)
+  a[t] = sample(x = c(1,2,3,4,5,6), size = 1,
+    prob = E[q[t],], replace=T)
+  v = P %*% v;
+}
+
+par(mfcol=c(2,1), mar = numeric(4), oma = c(4, 4, .5, .5),
+    mgp = c(2, .6, 0))
+plot(1:T_end,q,xlab='',ylab='',xaxt='n',yaxt='n',ylim=c(0,3),type="b")
+legend("top",legend=c("Fairness State"),col=1,pch=1)
+axis(2,at = c(1,2),las=1,labels=c("Fair","Unfair"))
+plot(1:T_end,a,col=2,ylab='States',las=1,ylim=c(0,8),yaxt='n',type="b")
+axis(2,at=c(1,2,3,4,5,6),las=1)
+mtext("Iterations", col = "black", adj=0.5, padj=21)
+legend("top",legend=c("Dice Roll State"),col=2,pch=1)
+
+bR = HMMbackward(a,P,E,v0)
+aR = HMMforward(a,P,E,v0)
+
+aRn = sum(aR[,T_end])
+bR0 = sum(v0*E[,a[1]]*bR[,1])
+
+infrd = hiddenStateInference(aR,bR,T_end)
+```
+Above are some plots for the hidden state and the observable states.
+
+## Problem 3b
+
+```{r problem3b}
+best_est = rep(0,T_end); for(t in 1:T_end) {best_est[t] = which.max(infrd[,t]);}
+pltState = matrix(c(q,best_est),ncol=2);
+matplot(pltState,pch=1,type="b",yaxt = "n",xaxt='n',xlab="Iterations",ylab="States",las=1,ylim=c(0.5,3))
+legend("top",legend=c("True State","Inferred State"),col=1:2,pch=1)
+axis(2,at = c(1,2),las=1,labels=c("Fair","Unfair"),ylab="States")
+#axis(1,labels="")
+plot(infrd[1,],xlab='Iterations',yaxt='n',ylim=c(-0.01,1.3),ylab="Prob",col=3)
+axis(2,las=1,at=c(0,0.2,0.4,0.6,0.8,1.0),las=1)
+legend("top",legend=c("Marginal Probability of Fair State"),col=3,pch=1)
+mtext("Iterations", col = "black", adj=0.5, padj=21)
+
+nmz <- function(x) {
+  return(x/sum(x));
+}
+K_end = 100;
+```
+
+Above is the marginal probabilitie over time for the fair state and consequent estimates of the true state are presented, given the observed states from the previous part.
+
+
+## Problem 3c
+```{r problem3c}
+result <- baum(E[1,],a,100,100)
+print("final v:")
+print(result[[1]][,K_end])
+print("final P:")
+print(result[[2]][,,K_end])
+print("final E:")
+print(result[[3]][,,K_end])
+```
+As we can see, while the estimate for E wasn't perfect for the unfair state, it does retain the quality of giving a roll of 3 the highest probability. The estimate for v and P being so biased to the unfair state may compensate for knowing only the fair die roll.
